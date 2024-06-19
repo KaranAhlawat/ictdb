@@ -8,7 +8,6 @@ import io.karan.ictdb.dto.RegisterUserDto
 import io.karan.ictdb.gen.services.auth.{EmailTakenError, UsernameTakenError}
 import io.karan.ictdb.http.JsonCodecs.given
 import io.karan.ictdb.http.middleware.SecurityMiddlewares
-import io.karan.ictdb.http.security.SecurityConfig
 import io.karan.ictdb.services.auth.AuthService
 import org.http4s.*
 import org.http4s.circe.CirceEntityDecoder.*
@@ -17,7 +16,6 @@ import org.http4s.dsl.io.*
 import org.http4s.headers.Location
 import org.http4s.server.Router
 import org.http4s.syntax.all.*
-import org.pac4j.core.config.Config
 import org.pac4j.core.profile.CommonProfile
 import org.pac4j.http4s.*
 
