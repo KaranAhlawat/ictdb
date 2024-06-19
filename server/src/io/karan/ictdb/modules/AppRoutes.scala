@@ -1,7 +1,6 @@
 package io.karan.ictdb.modules
 
 import cats.effect.{IO, Resource}
-import io.karan.ictdb.configuration.AppConfig
 import io.karan.ictdb.http.routes.{AuthRoutes, UserRoutes}
 import org.http4s.HttpRoutes
 import org.typelevel.log4cats.Logger

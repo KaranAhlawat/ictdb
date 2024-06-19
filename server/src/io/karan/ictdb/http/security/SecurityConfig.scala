@@ -1,10 +1,7 @@
-package io.karan.ictdb.http
+package io.karan.ictdb.http.security
 
 import cats.effect.IO
-import cats.effect.std.Dispatcher
-import io.karan.ictdb.configuration.ServerConfig
-import io.karan.ictdb.persistence.user.UserRepository
-import io.karan.ictdb.services.auth.AuthService
+import io.karan.ictdb.modules.ServerConfig
 import org.http4s.Uri
 import org.pac4j.core.authorization.authorizer.{Authorizer, DefaultAuthorizers}
 import org.pac4j.core.client.Clients
@@ -12,15 +9,12 @@ import org.pac4j.core.config.{Config, ConfigFactory}
 import org.pac4j.core.context.session.SessionStore
 import org.pac4j.core.context.{CallContext, WebContext}
 import org.pac4j.core.credentials.authenticator.Authenticator
-import org.pac4j.core.credentials.{Credentials, UsernamePasswordCredentials}
-import org.pac4j.core.exception.CredentialsException
 import org.pac4j.core.matching.matcher.{DefaultMatchers, Matcher}
 import org.pac4j.core.profile.UserProfile
 import org.pac4j.http.client.indirect.FormClient
 import org.pac4j.http4s.{DefaultHttpActionAdapter, Http4sGenericSessionStore}
 
 import java.util
-import java.util.Optional
 
 class SecurityConfig private (
     serverConf: ServerConfig,

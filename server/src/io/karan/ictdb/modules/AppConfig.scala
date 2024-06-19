@@ -1,4 +1,4 @@
-package io.karan.ictdb.configuration
+package io.karan.ictdb.modules
 
 import cats.effect.IO
 import cats.syntax.all.*

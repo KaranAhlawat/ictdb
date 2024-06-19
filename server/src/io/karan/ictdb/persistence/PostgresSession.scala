@@ -2,7 +2,7 @@ package io.karan.ictdb.persistence
 
 import cats.effect.{IO, Resource}
 import fs2.io.net.Network
-import io.karan.ictdb.configuration.DBConfig
+import io.karan.ictdb.modules.DBConfig
 import natchez.Trace.Implicits.given
 import skunk.Session
 

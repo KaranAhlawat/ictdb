@@ -1,8 +1,7 @@
 package io.karan.ictdb.modules
 
-import io.karan.ictdb.configuration.AppConfig
-import io.karan.ictdb.http.SecurityConfig
 import io.karan.ictdb.http.middleware.SecurityMiddlewares
+import io.karan.ictdb.http.security.SecurityConfig
 import org.pac4j.core.config.Config
 
 case class AppSecurity(

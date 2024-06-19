@@ -2,7 +2,6 @@ package io.karan.ictdb
 
 import cats.effect.{IO, IOApp}
 import cats.syntax.all.*
-import io.karan.ictdb.configuration.AppConfig
 import io.karan.ictdb.http.middleware.Http4sMiddleware
 import io.karan.ictdb.modules.*
 import org.http4s.ember.server.EmberServerBuilder

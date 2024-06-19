@@ -3,7 +3,6 @@ package io.karan.ictdb.modules
 import cats.effect.std.Dispatcher
 import cats.effect.{IO, IOLocal, Resource}
 import cats.syntax.all.*
-import io.karan.ictdb.configuration.AppConfig
 import io.karan.ictdb.persistence.PostgresSession
 import org.pac4j.core.profile.CommonProfile
 import skunk.Session

@@ -4,11 +4,11 @@ import cats.data.OptionT
 import cats.effect.IO
 import cats.syntax.all.*
 import http4sJsoniter.ArrayEntityCodec.*
-import io.karan.ictdb.domain.dtos.RegisterUserDto
+import io.karan.ictdb.dto.RegisterUserDto
 import io.karan.ictdb.gen.services.auth.{EmailTakenError, UsernameTakenError}
 import io.karan.ictdb.http.JsonCodecs.given
-import io.karan.ictdb.http.SecurityConfig
 import io.karan.ictdb.http.middleware.SecurityMiddlewares
+import io.karan.ictdb.http.security.SecurityConfig
 import io.karan.ictdb.services.auth.AuthService
 import org.http4s.*
 import org.http4s.circe.CirceEntityDecoder.*

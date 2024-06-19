@@ -1,4 +1,4 @@
-package io.karan.ictdb.http
+package io.karan.ictdb.http.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import cats.effect.IO

@@ -1,4 +1,4 @@
-package io.karan.ictdb.domain.dtos
+package io.karan.ictdb.dto
 
 import io.circe.Decoder
 
