@@ -51,24 +51,22 @@ class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserR
 
     override def removeFromUserFavorites(userID: String, talkID: String): IO[Unit] = ???
 
-    override def insertUser(
-        username: String,
-        email: Option[String],
-        password: Option[String]
-    ): IO[User] =
+    override def insertUser(user: User): IO[User] =
         val query =
             sql"""
                  | INSERT INTO users (username, user_email, user_password)
                  | VALUES (${varchar(50)}, ${text.opt}, ${text.opt})
-                 | RETURNING id, username, user_email
+                 | RETURNING id, username, user_email, user_password
                """.stripMargin
-                .query(bpchar(21) *: varchar(50) *: text.opt)
-                .map((id, username, email) => User.fromTuple((id, username, email, None)))
+                .query(bpchar(21) *: varchar(50) *: text.opt *: text.opt)
+                .map(User.fromTuple)
 
         pool.use(s =>
             s.prepare(query)
                 .flatMap: ps =>
-                    ps.unique((username, email, password))
+                    ps.unique(
+                        (user.username.value, user.email.map(_.value), user.password.map(_.value))
+                    )
         ).adaptError {
             case e: PostgresErrorException if e.constraintName.exists(_.contains("username"))   =>
                 UsernameTakenError()

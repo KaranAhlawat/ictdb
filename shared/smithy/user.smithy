@@ -2,12 +2,15 @@ $version: "2.0"
 
 namespace io.karan.ictdb.gen.domain.user
 
+use alloy.common#emailFormat
+
 @length(min: 21, max: 21)
 string UserID
 
 @length(min: 3, max: 50)
 string Username
 
+@emailFormat
 string UserEmail
 
 string UserPassword
