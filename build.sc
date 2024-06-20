@@ -13,11 +13,10 @@ object Versions {
     val alloy       = "0.3.8"
     val skunk       = "0.6.4"
     val bcrypt      = "0.10.2"
-    val jwt         = "10.0.1"
     val logback     = "1.5.6"
     val pac4j       = "6.0.3"
     val pac4jHttp4s = "5.0.0"
-    val jsoniter = "0.1.2"
+    val jsoniter    = "0.1.2"
 }
 
 object shared extends ScalaModule with Smithy4sModule with ScalafmtModule {
