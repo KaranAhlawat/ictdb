@@ -2,6 +2,8 @@ import $ivy.`com.disneystreaming.smithy4s::smithy4s-mill-codegen-plugin::0.18.22
 import $ivy.`io.github.davidgregory084::mill-tpolecat::0.3.5`
 import io.github.davidgregory084.TpolecatModule
 import mill._
+import mill.scalajslib._
+import mill.scalajslib.api.{ModuleKind, ModuleSplitStyle}
 import mill.scalalib._
 import mill.scalalib.scalafmt._
 import smithy4s.codegen.mill._
@@ -17,6 +19,7 @@ object Versions {
     val pac4j       = "6.0.3"
     val pac4jHttp4s = "5.0.0"
     val jsoniter    = "0.1.2"
+    val calico      = "0.2.2"
 }
 
 object shared extends ScalaModule with Smithy4sModule with ScalafmtModule {
@@ -26,9 +29,9 @@ object shared extends ScalaModule with Smithy4sModule with ScalafmtModule {
         ivy"com.disneystreaming.alloy:alloy-core:${Versions.alloy}"
     )
 
-    def smithySources = T.sources(millSourcePath / "smithy")
+    def smithySources: Target[PathRef] = T.source(millSourcePath / "smithy")
 
-    override def sources = T { super.sources() ++ smithySources() }
+    override def sources = T { super.sources() :+ smithySources() }
 }
 
 object server extends ScalaModule with TpolecatModule with ScalafmtModule {
@@ -48,4 +51,13 @@ object server extends ScalaModule with TpolecatModule with ScalafmtModule {
         ivy"at.favre.lib:bcrypt:${Versions.bcrypt}",
         ivy"ch.qos.logback:logback-classic:${Versions.logback}"
     )
+}
+
+object ui extends ScalaJSModule with TpolecatModule with ScalafmtModule {
+    override def scalaVersion                               = "3.4.2"
+    override def scalaJSVersion                             = "1.16.0"
+    override def moduleDeps                                 = Seq(shared)
+    override def ivyDeps                                    = Agg(ivy"com.armanbilge::calico::${Versions.calico}")
+    override def moduleSplitStyle: Target[ModuleSplitStyle] = T { ModuleSplitStyle.FewestModules }
+    override def moduleKind: Target[ModuleKind]             = T { ModuleKind.ESModule }
 }
