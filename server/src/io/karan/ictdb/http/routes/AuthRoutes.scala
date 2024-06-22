@@ -4,8 +4,7 @@ import cats.data.OptionT
 import cats.effect.IO
 import cats.syntax.all.*
 import http4sJsoniter.ArrayEntityCodec.*
-import io.karan.ictdb.gen.services.auth.{AuthService, EmailTakenError, UsernameTakenError}
-import io.karan.ictdb.gen.services.user.RegisterUserInput
+import io.karan.ictdb.gen.services.auth.*
 import io.karan.ictdb.http.JsonCodecs.given
 import io.karan.ictdb.http.middleware.SecurityMiddlewares
 import org.http4s.*
@@ -51,8 +50,8 @@ class AuthRoutes private (
                                 .registerUser(body.username, body.email, body.password)
                                 .flatMap(Ok(_))
                                 .handleErrorWith {
-                                    case e: UsernameTakenError => BadRequest(e)
-                                    case e: EmailTakenError    => BadRequest(e)
+                                    case e: UsernameTakenException => BadRequest(e)
+                                    case e: EmailTakenException    => BadRequest(e)
                                 }
                 yield resp
             case req @ GET -> Root / "callback"  =>

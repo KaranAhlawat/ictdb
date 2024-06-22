@@ -2,7 +2,7 @@ package io.karan.ictdb.http.middleware.smithy
 
 import cats.data.OptionT
 import cats.effect.IO
-import io.karan.ictdb.gen.UnauthenticatedError
+import io.karan.ictdb.gen.UnauthenticatedException
 import org.http4s.server.AuthMiddleware
 import org.http4s.{AuthedRoutes, HttpApp}
 
@@ -13,5 +13,5 @@ private def authWrapper[T](authMw: AuthMiddleware[IO, T]): HttpApp[IO] => HttpAp
         HttpApp { req =>
             val resp = httpRoutes(req)
             // TODO: When is this triggered?
-            resp.getOrRaise(UnauthenticatedError(message = "Please sign up or sign in."))
+            resp.getOrRaise(UnauthenticatedException(message = "Please sign up or sign in."))
         }

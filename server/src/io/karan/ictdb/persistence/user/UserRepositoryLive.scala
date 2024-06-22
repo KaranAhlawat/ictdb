@@ -5,7 +5,7 @@ import cats.syntax.all.*
 import io.karan.ictdb.extensions.*
 import io.karan.ictdb.gen.domain.talk.Talk
 import io.karan.ictdb.gen.domain.user.*
-import io.karan.ictdb.gen.services.auth.{EmailTakenError, UsernameTakenError}
+import io.karan.ictdb.gen.services.auth.*
 import io.karan.ictdb.persistence.user.UserRepositoryLive.user
 import skunk.*
 import skunk.codec.all.*
@@ -69,9 +69,9 @@ class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserR
                     )
         ).adaptError {
             case e: PostgresErrorException if e.constraintName.exists(_.contains("username"))   =>
-                UsernameTakenError()
+                UsernameTakenException()
             case e: PostgresErrorException if e.constraintName.exists(_.contains("user_email")) =>
-                EmailTakenError()
+                EmailTakenException()
         }
 end UserRepositoryLive
 

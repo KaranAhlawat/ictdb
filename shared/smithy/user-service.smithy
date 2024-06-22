@@ -9,7 +9,7 @@ use io.karan.ictdb.gen.domain.talk#TalkID
 use io.karan.ictdb.gen.domain.talk#TalkList
 use io.karan.ictdb.gen.domain.user#SerializableUser
 use io.karan.ictdb.gen.domain.user#UserID
-use io.karan.ictdb.gen.services.auth#sessionAuth
+use io.karan.ictdb.gen.http.auth#SessionAuth
 
 @error("client")
 @httpError(400)
@@ -19,8 +19,8 @@ structure UserNotFoundException {
 }
 
 @simpleRestJson
-@sessionAuth
-@auth([sessionAuth])
+@SessionAuth
+@auth([SessionAuth])
 service UserService {
     operations: [
         GetDetails,

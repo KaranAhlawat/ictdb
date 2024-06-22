@@ -9,39 +9,33 @@ use io.karan.ictdb.gen.domain.user#Username
 
 @error("client")
 @httpError(401)
-structure UsernameTakenError {
+structure UsernameTakenException {
     @required
     message: String = "Provided username is already taken"
 }
 
 @error("client")
 @httpError(401)
-structure EmailTakenError {
+structure EmailTakenException {
     @required
     message: String = "Provided email is already registered"
 }
 
 @error("client")
 @httpError(401)
-structure InvalidCredentialsError {
+structure InvalidCredentialsException {
     @required
     message: String = "Invalid credentials provided"
 }
 
-@authDefinition
-@trait
-structure sessionAuth {}
-
 service AuthService {
-    operations: [
-        RegisterUser
-    ]
+    operations: [RegisterUser]
 }
 
 operation RegisterUser {
     input: RegisterUserInput
     output: RegisterUserOutput
-    errors: [UsernameTakenError, EmailTakenError]
+    errors: [UsernameTakenException, EmailTakenException]
 }
 
 @input

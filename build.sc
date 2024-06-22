@@ -25,6 +25,10 @@ object shared extends ScalaModule with Smithy4sModule with ScalafmtModule {
         ivy"com.disneystreaming.smithy4s::smithy4s-core:${smithy4sVersion()}",
         ivy"com.disneystreaming.alloy:alloy-core:${Versions.alloy}"
     )
+
+    def smithySources = T.sources(millSourcePath / "smithy")
+
+    override def sources = T { super.sources() ++ smithySources() }
 }
 
 object server extends ScalaModule with TpolecatModule with ScalafmtModule {

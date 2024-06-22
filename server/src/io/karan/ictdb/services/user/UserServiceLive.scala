@@ -3,7 +3,7 @@ package io.karan.ictdb.services.user
 import cats.data.NonEmptyList
 import cats.effect.{IO, IOLocal}
 import cats.syntax.all.*
-import io.karan.ictdb.gen.ForbiddenError
+import io.karan.ictdb.gen.ForbiddenException
 import io.karan.ictdb.gen.domain.talk.TalkID
 import io.karan.ictdb.gen.domain.user.{SerializableUser, UserID}
 import io.karan.ictdb.gen.services.user.*
@@ -20,11 +20,11 @@ class UserServiceLive private (userRepo: UserRepository, profile: IO[NonEmptyLis
             .ifM(
                 ifTrue = userRepo
                     .findUserById(userId.value)
-                    .flatMap(IO.fromOption(_)(UserNotFoundError()))
+                    .flatMap(IO.fromOption(_)(UserNotFoundException()))
                     .map(user =>
                         GetDetailsOutput(SerializableUser(user.id, user.username, user.email))
                     ),
-                ifFalse = IO.raiseError(ForbiddenError())
+                ifFalse = IO.raiseError(ForbiddenException())
             )
 
     override def getFavoriteTalks(userId: UserID): IO[GetFavoriteTalksOutput] =
