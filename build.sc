@@ -1,6 +1,5 @@
 import $ivy.`com.disneystreaming.smithy4s::smithy4s-mill-codegen-plugin::0.18.22`
 import $ivy.`io.github.davidgregory084::mill-tpolecat::0.3.5`
-
 import io.github.davidgregory084.TpolecatModule
 import mill.scalalib.scalafmt._
 import mill._
@@ -8,7 +7,7 @@ import mill.define.Task
 import mill.scalalib._
 import mill.scalajslib._
 import mill.scalajslib.api._
-
+import os.Path
 import smithy4s.codegen.mill._
 
 object Versions {
@@ -74,18 +73,6 @@ object server extends AppScalaModule {
 object ui extends AppScalaJSModule {
     override def moduleDeps       = Seq(shared.js)
     override def ivyDeps          = Agg(ivy"com.armanbilge::calico::${Versions.calico}")
-    override def moduleSplitStyle = ModuleSplitStyle.SmallestModules
+    override def moduleSplitStyle = ModuleSplitStyle.FewestModules
     override def moduleKind       = ModuleKind.ESModule
-
-    def publicDev = T {
-        public(fastLinkJS)()
-    }
-    def publicProd = T {
-        public(fullLinkJS)()
-    }
-}
-
-def public(jsTask: Task[Report]): Task[Map[String, os.Path]] = T.task {
-    val jsPath = jsTask().dest.path
-    Map("@public" -> jsPath)
 }

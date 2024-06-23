@@ -9,6 +9,16 @@
   </head>
   <body>
     <div id="app"></div>
-    <script type="module" src="/main.js"></script>
+    <script type="module" src="out/ui/fastLinkJS.dest/main.js"></script>
+    <script>
+      const sse = new EventSource("/refresh/v1/sse");
+      sse.addEventListener("message", (e) => {
+        const msg = JSON.parse(e.data);
+
+        if ("KeepAlive" in msg) console.log("KeepAlive");
+
+        if ("PageRefresh" in msg) location.reload();
+      });
+    </script>
   </body>
 </html>
