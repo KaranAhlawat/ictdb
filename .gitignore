@@ -5,3 +5,5 @@ out/
 .idea/
 apicoll/
 docker-compose.yml
+.metals/
+node_modules/
