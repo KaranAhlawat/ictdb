@@ -1,0 +1,31 @@
+[tasks."compile:ui"]
+description = "Compile the UI module and generate the debug JS output"
+run = "./mill ui.fastLinkJS"
+[tasks."compile:server"]
+description = "Compile the Server module"
+run = "./mill server.compile"
+[tasks.compile]
+description = "Compile both the UI and the server"
+depends = ["compile:*"]
+
+[tasks.fmt]
+description = "Format all sources"
+run = "./mill __.reformat"
+
+[tasks."run:server"]
+description = "Run the server"
+run = "./mill server.run"
+[tasks."run:ui"]
+description = "Compile the UI module to JS and open index.html"
+depends = ["compile:ui"]
+run = "xdg-open index.html"
+
+[tasks."dev:server"]
+description = "Run the server on watch mode"
+run = "./mill -w server.runBackground"
+[tasks."dev:ui"]
+description = "Run the UI on watch mode"
+run = "cs launch io.github.quafadas:live-server-scala-cli-js_3:0.1.1 -- --build-tool mill --mill-module-name ui --path-to-index-html . "
+[tasks.dev]
+description = "Run both server and UI on watch mode"
+depends = ["dev:*"]
