@@ -65,7 +65,11 @@ class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserR
             s.prepare(query)
                 .flatMap: ps =>
                     ps.unique(
-                        (user.username.value, user.email.map(_.value), user.password.map(_.value))
+                        (
+                            user.username.value,
+                            user.email.map(_.value.value),
+                            user.password.map(_.value)
+                        )
                     )
         ).adaptError {
             case e: PostgresErrorException if e.constraintName.exists(_.contains("username"))   =>
