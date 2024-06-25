@@ -2,6 +2,7 @@
 *.local.toml
 out/
 .bsp/
+.bloop/
 .idea/
 apicoll/
 docker-compose.yml
