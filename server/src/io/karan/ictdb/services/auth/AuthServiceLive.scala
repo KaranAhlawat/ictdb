@@ -25,11 +25,16 @@ class AuthServiceLive private (userRepo: UserRepository) extends AuthService[IO]
 
         userRepo
             .insertUser(user)
-            .map(saved =>
-                RegisterUserOutput(
-                    SerializableUser(id = saved.id, username = saved.username, email = saved.email)
-                )
-            )
+            .flatMap {
+                case Right(saved) =>
+                    IO.pure(
+                        RegisterUserOutput(
+                            SerializableUser(id = saved.id, username = saved.username, email = saved.email)
+                        )
+                    )
+                case Left(error) =>
+                    IO.raiseError(error)
+            }
 
 object AuthServiceLive:
     def make(userRepo: UserRepository): AuthServiceLive =

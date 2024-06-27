@@ -26,6 +26,9 @@ object Versions {
 
 trait AppScalaModule extends ScalaModule with TpolecatModule with ScalafmtModule {
     override def scalaVersion = "3.4.2"
+    override def scalacOptions = T {
+        super.scalacOptions().filterNot(Set("-explain", "-explaintypes", "-explain-types"))
+    }
 }
 
 trait AppScalaJSModule extends AppScalaModule with ScalaJSModule {

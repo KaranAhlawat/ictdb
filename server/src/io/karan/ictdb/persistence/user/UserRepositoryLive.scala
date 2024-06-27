@@ -51,32 +51,37 @@ class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserR
 
     override def removeFromUserFavorites(userID: String, talkID: String): IO[Unit] = ???
 
-    override def insertUser(user: User): IO[User] =
+    override def insertUser(
+        user: User
+    ): IO[Either[UsernameTakenException | EmailTakenException, User]] =
         val query =
             sql"""
                  | INSERT INTO users (username, user_email, user_password)
                  | VALUES (${varchar(50)}, ${text.opt}, ${text.opt})
                  | RETURNING id, username, user_email, user_password
                """.stripMargin
-                .query(bpchar(21) *: varchar(50) *: text.opt *: text.opt)
+                .query(UserRepositoryLive.user)
                 .map(User.fromTuple)
 
-        pool.use(s =>
+        pool.use: s =>
             s.prepare(query)
                 .flatMap: ps =>
                     ps.unique(
                         (
                             user.username.value,
-                            user.email.map(_.value.value),
+                            user.email.map(_.value.email),
                             user.password.map(_.value)
                         )
                     )
-        ).adaptError {
-            case e: PostgresErrorException if e.constraintName.exists(_.contains("username"))   =>
-                UsernameTakenException()
-            case e: PostgresErrorException if e.constraintName.exists(_.contains("user_email")) =>
-                EmailTakenException()
-        }
+        .attempt
+            .map(_.leftMap {
+                case e: PostgresErrorException if e.constraintName.exists(_.contains("username")) =>
+                    UsernameTakenException()
+                case e: PostgresErrorException
+                    if e.constraintName.exists(_.contains("user_email")) =>
+                    EmailTakenException()
+            })
+    end insertUser
 end UserRepositoryLive
 
 object UserRepositoryLive:
