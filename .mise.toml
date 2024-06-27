@@ -25,7 +25,7 @@ description = "Run the server on watch mode"
 run = "./mill -w server.runBackground"
 [tasks."dev:ui"]
 description = "Run the UI on watch mode"
-run = "cs launch io.github.quafadas:live-server-scala-cli-js_3:0.1.1 -- --build-tool mill --mill-module-name ui --path-to-index-html . "
+run = "cs launch io.github.quafadas:live-server-scala-cli-js_3:0.1.3 -- --build-tool mill --build-tool-invocation ./mill --mill-module-name ui --path-to-index-html . "
 [tasks.dev]
 description = "Run both server and UI on watch mode"
 depends = ["dev:*"]
