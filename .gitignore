@@ -7,4 +7,5 @@ out/
 apicoll/
 docker-compose.yml
 .metals/
+.vscode/
 node_modules/
