@@ -29,12 +29,18 @@ class AuthServiceLive private (userRepo: UserRepository) extends AuthService[IO]
                 case Right(saved) =>
                     IO.pure(
                         RegisterUserOutput(
-                            SerializableUser(id = saved.id, username = saved.username, email = saved.email)
+                            SerializableUser(
+                                id = saved.id,
+                                username = saved.username,
+                                email = saved.email
+                            )
                         )
                     )
-                case Left(error) =>
+                case Left(error)  =>
                     IO.raiseError(error)
             }
+    end registerUser
+end AuthServiceLive
 
 object AuthServiceLive:
     def make(userRepo: UserRepository): AuthServiceLive =
