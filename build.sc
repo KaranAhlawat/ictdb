@@ -22,25 +22,25 @@ object Versions {
     val pac4jHttp4s = "5.0.0"
     val jsoniter    = "0.1.2"
     val calico      = "0.2.2"
-    val munitCats = "2.0.0"
+    val munitCats   = "2.0.0"
 }
 
 trait AppScalaModule extends ScalaModule with TpolecatModule with ScalafmtModule {
-    override def scalaVersion = "3.4.2"
+    override def scalaVersion  = "3.4.2"
     override def scalacOptions = T {
         super.scalacOptions().filterNot(Set("-explain", "-explaintypes", "-explain-types"))
     }
 }
 
 trait AppScalaJSModule extends AppScalaModule with ScalaJSModule {
-    override def scalaJSVersion: T[String] = "1.16.0"
+    override def scalaJSVersion = "1.16.0"
 }
 
 object shared extends Module {
     trait SharedModule extends AppScalaModule with PlatformScalaModule with Smithy4sModule {
-        def smithySources: Target[PathRef] = T.source(millSourcePath / "smithy")
-        override def sources               = super.sources() :+ smithySources()
-        override def ivyDeps               =
+        def smithySources    = T.source(millSourcePath / "smithy")
+        override def sources = super.sources() :+ smithySources()
+        override def ivyDeps =
             Agg(ivy"com.disneystreaming.alloy:alloy-core:${Versions.alloy}")
     }
 
@@ -70,11 +70,11 @@ object server extends AppScalaModule {
         ivy"org.pac4j:pac4j-oidc:${Versions.pac4j}",
         ivy"org.pac4j:pac4j-http:${Versions.pac4j}",
         ivy"at.favre.lib:bcrypt:${Versions.bcrypt}",
-        ivy"ch.qos.logback:logback-classic:${Versions.logback}",
+        ivy"ch.qos.logback:logback-classic:${Versions.logback}"
     )
 
     object test extends ScalaTests with TestModule.Munit {
-        override def ivyDeps: T[Agg[Dep]] = Agg(ivy"org.typelevel::munit-cats-effect:${Versions.munitCats}")
+        override def ivyDeps = Agg(ivy"org.typelevel::munit-cats-effect:${Versions.munitCats}")
     }
 }
 
@@ -85,6 +85,6 @@ object ui extends AppScalaJSModule {
     override def moduleKind       = ModuleKind.ESModule
 
     object test extends ScalaJSTests with TestModule.Munit {
-        override def ivyDeps: T[Agg[Dep]] = Agg(ivy"org.typelevel::munit-cats-effect::${Versions.munitCats}")
+        override def ivyDeps = Agg(ivy"org.typelevel::munit-cats-effect::${Versions.munitCats}")
     }
 }
