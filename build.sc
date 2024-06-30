@@ -11,7 +11,7 @@ import os.Path
 import smithy4s.codegen.mill._
 
 object Versions {
-    val cats        = "3.5.3"
+    val cats        = "3.5.4"
     val ciris       = "3.6.0"
     val http4s      = "0.23.27"
     val alloy       = "0.3.8"
@@ -22,6 +22,7 @@ object Versions {
     val pac4jHttp4s = "5.0.0"
     val jsoniter    = "0.1.2"
     val calico      = "0.2.2"
+    val munitCats = "2.0.0"
 }
 
 trait AppScalaModule extends ScalaModule with TpolecatModule with ScalafmtModule {
@@ -71,6 +72,10 @@ object server extends AppScalaModule {
         ivy"at.favre.lib:bcrypt:${Versions.bcrypt}",
         ivy"ch.qos.logback:logback-classic:${Versions.logback}",
     )
+
+    object test extends ScalaTests with TestModule.Munit {
+        override def ivyDeps: T[Agg[Dep]] = Agg(ivy"org.typelevel::munit-cats-effect:${Versions.munitCats}")
+    }
 }
 
 object ui extends AppScalaJSModule {
@@ -78,4 +83,8 @@ object ui extends AppScalaJSModule {
     override def ivyDeps          = Agg(ivy"com.armanbilge::calico::${Versions.calico}")
     override def moduleSplitStyle = ModuleSplitStyle.FewestModules
     override def moduleKind       = ModuleKind.ESModule
+
+    object test extends ScalaJSTests with TestModule.Munit {
+        override def ivyDeps: T[Agg[Dep]] = Agg(ivy"org.typelevel::munit-cats-effect::${Versions.munitCats}")
+    }
 }
