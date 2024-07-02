@@ -6,11 +6,11 @@ import io.karan.ictdb.extensions.*
 import io.karan.ictdb.gen.domain.talk.Talk
 import io.karan.ictdb.gen.domain.user.*
 import io.karan.ictdb.gen.services.auth.*
-import io.karan.ictdb.persistence.user.UserRepositoryLive.user
 import skunk.*
 import skunk.codec.all.*
 import skunk.exception.PostgresErrorException
 import skunk.implicits.*
+import io.karan.ictdb.domain.Email
 
 class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserRepository:
     override def findUserById(id: String): IO[Option[User]] =
@@ -20,8 +20,7 @@ class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserR
                  | FROM users
                  | WHERE id = ${bpchar(21)}
                  |""".stripMargin
-                .query(user)
-                .map(User.fromTuple)
+                .query(UserRepositoryLive.userCodec)
 
         pool.use: s =>
             s.prepare(query)
@@ -37,8 +36,7 @@ class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserR
                  | OR user_email = $text)
                  | AND user_password IS NOT NULL
                """.stripMargin
-                .query(bpchar(21) *: varchar(50) *: text.opt *: text)
-                .map((id, name, email, pass) => User.fromTuple(id, name, email, Some(pass)))
+                .query(UserRepositoryLive.userCodec)
 
         pool.use: s =>
             s.prepare(query)
@@ -60,8 +58,7 @@ class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserR
                  | VALUES (${varchar(50)}, ${text.opt}, ${text.opt})
                  | RETURNING id, username, user_email, user_password
                """.stripMargin
-                .query(UserRepositoryLive.user)
-                .map(User.fromTuple)
+                .query(UserRepositoryLive.userCodec)
 
         pool.use: s =>
             s.prepare(query)
@@ -81,11 +78,20 @@ class UserRepositoryLive private (pool: Resource[IO, Session[IO]]) extends UserR
                     if e.constraintName.exists(_.contains("user_email")) =>
                     EmailTakenException()
             })
-    end insertUser
 end UserRepositoryLive
 
 object UserRepositoryLive:
-    private val user = bpchar(21) *: varchar(50) *: text.opt *: text.opt
+    private val userCodec: Codec[User] = (bpchar(21) *: varchar(50) *: text.opt *: text.opt).imap {
+        (id, name, email, password) =>
+            User(
+                id = UserID(id),
+                username = Username(name),
+                email = email.flatMap(m => Email(m).toOption).map(UserEmail.apply),
+                password = password.map(UserPassword.apply)
+            )
+    } { case User(id, name, email, password) =>
+        (id.value, name.value, email.map(_.value.email), password.map(_.value))
+    }
 
     def make(pool: Resource[IO, Session[IO]]): UserRepositoryLive =
         UserRepositoryLive(pool)
