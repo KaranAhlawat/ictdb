@@ -2,7 +2,6 @@ package io.karan.ictdb.persistence.user
 
 import cats.effect.*
 import cats.syntax.all.*
-import io.karan.ictdb.extensions.*
 import io.karan.ictdb.gen.domain.talk.Talk
 import io.karan.ictdb.gen.domain.user.*
 import io.karan.ictdb.gen.services.auth.*
