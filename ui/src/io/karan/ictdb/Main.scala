@@ -1,9 +1,11 @@
 package io.karan.ictdb
+
 import calico.*
 import calico.html.io.{*, given}
 import calico.syntax.*
 import calico.unsafe.given
-import cats.effect.{IO, Resource}
+import cats.effect.IO
+import cats.effect.Resource
 import fs2.dom.*
 
 object Main extends IOWebApp:
