@@ -79,7 +79,7 @@ object server extends AppScalaModule {
 object ui extends AppScalaJSModule {
     override def moduleDeps       = Seq(shared.js)
     override def ivyDeps          = Agg(ivy"com.armanbilge::calico::${Versions.calico}")
-    override def moduleSplitStyle = ModuleSplitStyle.FewestModules
+    override def moduleSplitStyle = ModuleSplitStyle.SmallModulesFor(List("io.karan.ictdb"))
     override def moduleKind       = ModuleKind.ESModule
 
     object test extends ScalaJSTests with TestModule.Munit {
