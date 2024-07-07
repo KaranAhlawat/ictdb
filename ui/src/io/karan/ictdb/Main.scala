@@ -10,4 +10,7 @@ import fs2.dom.*
 
 object Main extends IOWebApp:
     override def render: Resource[IO, HtmlElement[IO]] =
-        div(s"The email is not or is it!")
+        div(
+            cls := "py-4 max-w-4xl mx-auto",
+            p(cls := "text-white text-2xl", "The email is not here")
+        )
