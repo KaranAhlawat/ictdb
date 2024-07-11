@@ -85,4 +85,16 @@ object ui extends AppScalaJSModule {
     object test extends ScalaJSTests with TestModule.Munit {
         override def ivyDeps = Agg(ivy"org.typelevel::munit-cats-effect::${Versions.munitCats}")
     }
+
+    def publicDev = T {
+        public(fastLinkJS)()
+    }
+
+    def publicProd = T {
+        public(fullLinkJS)()
+    }
+}
+
+def public(jsTask: Task[Report]): Task[Map[String, os.Path]] = T.task {
+    Map("@public" -> jsTask().dest.path)
 }

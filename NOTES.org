@@ -1,0 +1,46 @@
+#+title: NOTES for Project
+#+date: 2024-07-11
+#+author: Karan Ahlawat
+
+* Setting up Vite
+[[https://github.com/lolgab/scalajs-vite-example][ScalaJS Vite Mill Example by Lorenzo Gabriele]]
+1. Create package.json (manually or through npm/bun/pnpm etc)
+2. Run the following
+   #+begin_src sh
+  bun add -D vite 
+   #+end_src
+3. Add Mill tasks to your frontend module to produce JSON with each key pointing to an mill fast link JS output destination path (example)
+     #+begin_src js
+  {"@public":"out/ui/fastLinkJS.dest"}
+     #+end_src
+4. In your =vite.config.js= you need to add an alias to resolve files beginning with the =@public= prefix to the Mill fastLinkJS output.
+5. Then, in your html.index, import main.js as a module (place both of them in the same directory)
+6. In your main.js, import your main.js from your fastLinkJS output as follows (assuming your main.js doesn't produce a main function)
+   #+begin_src js
+   import '@public/main.js'
+   #+end_src
+7. Change the Vite =rootDir= option to where your index.html and main.js is located.
+8. Now, in one terminal, run  src_sh{bun dev} and in another one run src_sh{./mill -w ui.publicDev}
+9. This will setup automatic browser refresh
+** NOTE
+If this is all the functionality you need (just fast refresh, with no package.json to manage npm packages installed locally or some other such use case), I recommend to use [[https://github.com/Quafadas/live-server-scala-cli-js][live-server-scala-cli-js]]. It is much much easier to setup, and doesn't require any installation of Node to work currently. Drop a star!
+
+* Setting up Tailwind
+1. Assuming you have the above =vite= project setup, run the following
+   #+begin_src sh
+   bun add -D tailwindcss postcss autoprefixer
+   #+end_src
+2. Init tailwindcss and postcss (vite will pick it up automatically)
+   #+begin_src sh
+   bun x tailwindcss init -p --esm
+   #+end_src
+3. Add =tailwind.css= to the same directory as your static =main.js= file
+4. Add the following to the =tailwind.css= config file
+   #+begin_src css
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+   #+end_src
+5. Import the file to your =main.js= file
+6. Add your scala files (in your ScalaJS/frontend module) to the content section of the tailwind config. This allows tailwind to generate the styles and  purge unused styles. (from what I know, might be wrong)
+7. Run step 8 from the previous section.public/
