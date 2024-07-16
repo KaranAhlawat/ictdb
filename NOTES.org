@@ -3,16 +3,16 @@
 #+author: Karan Ahlawat
 
 * Setting up Vite
-[[https://github.com/lolgab/scalajs-vite-example][ScalaJS Vite Mill Example by Lorenzo Gabriele]]
+[[https://github.com/lolgab/scalajs-vite-example][ScalaJS Vite Mill Example by Lorenzo Gabriele(lolgab)]]
 1. Create package.json (manually or through npm/bun/pnpm etc)
 2. Run the following
    #+begin_src sh
-  bun add -D vite 
+   bun add -D vite 
    #+end_src
 3. Add Mill tasks to your frontend module to produce JSON with each key pointing to an mill fast link JS output destination path (example)
-     #+begin_src js
-  {"@public":"out/ui/fastLinkJS.dest"}
-     #+end_src
+   #+begin_src js
+   {"@public":"out/ui/fastLinkJS.dest"}
+   #+end_src
 4. In your =vite.config.js= you need to add an alias to resolve files beginning with the =@public= prefix to the Mill fastLinkJS output.
 5. Then, in your html.index, import main.js as a module (place both of them in the same directory)
 6. In your main.js, import your main.js from your fastLinkJS output as follows (assuming your main.js doesn't produce a main function)
@@ -22,8 +22,9 @@
 7. Change the Vite =rootDir= option to where your index.html and main.js is located.
 8. Now, in one terminal, run  src_sh{bun dev} and in another one run src_sh{./mill -w ui.publicDev}
 9. This will setup automatic browser refresh
-** NOTE
-If this is all the functionality you need (just fast refresh, with no package.json to manage npm packages installed locally or some other such use case), I recommend to use [[https://github.com/Quafadas/live-server-scala-cli-js][live-server-scala-cli-js]]. It is much much easier to setup, and doesn't require any installation of Node to work currently. Drop a star!
+   #+begin_comment
+   If this is all the functionality you need (just fast refresh, with no package.json to manage npm packages installed locally or some other such use case), I recommend to use [[https://github.com/Quafadas/live-server-scala-cli-js][live-server-scala-cli-js]]. It is much much easier to setup, and doesn't require any installation of Node to work currently. Drop a star!
+   #+end_comment
 
 * Setting up Tailwind
 1. Assuming you have the above =vite= project setup, run the following
