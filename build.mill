@@ -7,7 +7,7 @@ import com.goyeau.mill.scalafix.ScalafixModule
 import mill._
 import scalalib._
 
-def fmt = scalafmt.ScalafmtModule
+def fmt = mill.scalalib.scalafmt.ScalafmtModule
 
 object V {
   val scala3 = "3.6.2"
