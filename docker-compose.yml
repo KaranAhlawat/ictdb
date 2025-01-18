@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    volumes:
+#      - db:/var/lib/postgresql/data
+      - ./src/main/resources/sql:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=ictdb
+      - POSTGRES_PASSWORD=ictdbpwd
+      - POSTGRES_DB=ictdb
+    restart: unless-stopped
+
+volumes:
+  db:

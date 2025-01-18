@@ -1,0 +1,54 @@
+package build
+
+import $ivy.`io.github.davidgregory084::mill-tpolecat::0.3.5`
+import $ivy.`com.goyeau::mill-scalafix::0.4.2`
+import io.github.davidgregory084.TpolecatModule
+import com.goyeau.mill.scalafix.ScalafixModule
+import mill._
+import scalalib._
+
+def fmt = scalafmt.ScalafmtModule
+
+object V {
+  val scala3 = "3.6.2"
+  val http4s = "0.23.30"
+  val http4sTags = "0.25.2"
+  val catsEffect = "3.6.0-RC1"
+  val magnum = "2.0.0-SNAPSHOT"
+  val postgres = "42.7.5"
+  val hikariCP = "6.2.1"
+  val ciris = "3.7.0"
+  val chimney = "1.6.0"
+  val nimbus = "11.21"
+  val tink = "1.16.0"
+}
+
+object app extends TpolecatModule with ScalafixModule {
+  def scalaVersion = V.scala3
+  def scalacOptions = Task {
+    super
+      .scalacOptions()
+      .filterNot(
+          Set("-explain", "-explaintypes", "-explain-types", "-Ykind-projector", "-Werror", "-Xfatal-warnings")
+      ) ++
+      Set("-Xkind-projector", "-Wunused:all")
+  }
+  def ivyDeps = Agg(
+    ivy"org.typelevel::cats-effect:${V.catsEffect}",
+    ivy"is.cir::ciris:${V.ciris}",
+    ivy"io.scalaland::chimney:${V.chimney}",
+    // HTTP
+    ivy"org.http4s::http4s-ember-server:${V.http4s}",
+    ivy"org.http4s::http4s-ember-client:${V.http4s}",
+    ivy"org.http4s::http4s-dsl:${V.http4s}",
+    ivy"org.http4s::http4s-scalatags:${V.http4sTags}",
+    // Database
+    ivy"com.augustnagro::magnum-ce:${V.magnum}",
+    ivy"com.augustnagro::magnumpg:${V.magnum}",
+    ivy"org.postgresql:postgresql:${V.postgres}",
+    ivy"com.zaxxer:HikariCP:${V.hikariCP}",
+    // Security
+    ivy"com.nimbusds:oauth2-oidc-sdk:${V.nimbus}",
+    ivy"com.google.crypto.tink:tink:${V.tink}"
+  )
+}
