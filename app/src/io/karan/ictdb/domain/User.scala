@@ -11,4 +11,4 @@ case class User(
 
 enum UserOrigin:
   case Form
-  case Github
+  case Google
