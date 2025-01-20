@@ -10,14 +10,14 @@ case class UserCreator(
   provider: DbUserOrigin
 )
 
-@SqlName("user_origin")
 @Table(PostgresDbType, SqlNameMapper.CamelToSnakeCase)
+@SqlName("user_origin")
 enum DbUserOrigin derives DbCodec:
   case Form
-  case Github
+  case Google
 
-@SqlName("users")
 @Table(PostgresDbType, SqlNameMapper.CamelToSnakeCase)
+@SqlName("users")
 case class UserReader(
   @Id id: Long,
   providerId: String,

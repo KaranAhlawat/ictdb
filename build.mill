@@ -22,6 +22,7 @@ object V {
   val nimbus     = "11.21"
   val tink       = "1.16.0"
   val logback    = "1.5.16"
+  val circe      = "0.14.10"
 }
 
 object app extends TpolecatModule with ScalafixModule {
@@ -38,11 +39,13 @@ object app extends TpolecatModule with ScalafixModule {
     ivy"org.typelevel::cats-effect:${V.catsEffect}",
     ivy"is.cir::ciris:${V.ciris}",
     ivy"io.scalaland::chimney:${V.chimney}",
+    ivy"io.circe::circe-generic:${V.circe}",
     // HTTP
     ivy"org.http4s::http4s-ember-server:${V.http4s}",
     ivy"org.http4s::http4s-ember-client:${V.http4s}",
     ivy"org.http4s::http4s-dsl:${V.http4s}",
     ivy"org.http4s::http4s-scalatags:${V.http4sTags}",
+    ivy"org.http4s::http4s-circe:${V.http4s}",
     // Database
     ivy"com.augustnagro::magnum-ce:${V.magnum}",
     ivy"com.augustnagro::magnumpg:${V.magnum}",

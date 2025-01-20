@@ -11,6 +11,7 @@ import io.karan.ictdb.config.AppConfig
 import io.karan.ictdb.http.Server
 import io.karan.ictdb.http.auth.Http4sRequestSender
 import io.karan.ictdb.persistence.{DataSource, UserRepo}
+import io.karan.ictdb.services.UserService
 import org.http4s.ember.client.EmberClientBuilder
 
 import java.util.concurrent.Executors
@@ -22,13 +23,14 @@ object Application extends IOApp.Simple:
       ds                   <- DataSource.make(config.db)
       xa                   <- config.db.maxConn.fold(Transactor[IO](ds))(max => Transactor[IO](ds, max)).toResource
       userRepo              = UserRepo.live
+      userService           = UserService.live(xa, userRepo)
       client               <- EmberClientBuilder.default[IO].build
       sender               <- Http4sRequestSender.make(client)
       virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor
       gs                    = GoogleAuthService.make(config.google, sender, virtualThreadExecutor)
       aead                 <- setupAead(config.server.keysetPath).toResource
       crypto                = Crypto.make(aead)
-      server               <- Server.make(config.server, crypto, gs)
+      server               <- Server.make(config.server, crypto, gs, userService)
     yield server
 
   override def run = runF.useForever

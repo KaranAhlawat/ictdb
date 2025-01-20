@@ -4,18 +4,19 @@ import cats.effect.IO
 import cats.syntax.all.*
 import io.karan.ictdb.auth.{Crypto, GoogleAuthService}
 import io.karan.ictdb.config.ServerConfig
+import io.karan.ictdb.services.UserService
 import org.http4s.ember.server.EmberServerBuilder
 
 object Server:
-  def make(config: ServerConfig, crypto: Crypto, gs: GoogleAuthService) =
+  def make(config: ServerConfig, crypto: Crypto, gs: GoogleAuthService, userService: UserService) =
     EmberServerBuilder
       .default[IO]
       .withHost(config.host)
       .withPort(config.port)
-      .withHttpApp(routes(crypto, gs).orNotFound)
+      .withHttpApp(routes(crypto, gs, userService).orNotFound)
       .build
 
-  private def routes(crypto: Crypto, gs: GoogleAuthService) =
+  private def routes(crypto: Crypto, gs: GoogleAuthService, userService: UserService) =
     val rootRoutes = RootController.routes(crypto)
-    val authRoutes = AuthController.make(crypto, gs).routes
+    val authRoutes = AuthController.make(crypto, gs, userService).routes
     rootRoutes <+> authRoutes

@@ -4,10 +4,13 @@ import cats.effect.IO
 import com.nimbusds.oauth2.sdk.id.State
 import com.nimbusds.oauth2.sdk.pkce.CodeVerifier
 import io.karan.ictdb.auth.*
-import io.karan.ictdb.domain.User
 import io.karan.ictdb.domain.UserOrigin.{Form, Google}
+import io.karan.ictdb.domain.{User, UserOrigin}
 import io.karan.ictdb.http.auth.{Cookies, checkAuthentication}
-import io.karan.ictdb.views.{Layout, LoginPage}
+import io.karan.ictdb.http.dto.RegisterUserRequest
+import io.karan.ictdb.services.UserService
+import io.karan.ictdb.views.{Layout, LoginPage, RegisterPage}
+import org.http4s.circe.CirceEntityDecoder.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.{Location, `WWW-Authenticate`}
 import org.http4s.implicits.uri
@@ -15,7 +18,9 @@ import org.http4s.scalatags.*
 import org.http4s.server.Router
 import org.http4s.{Challenge, HttpRoutes, Response, Status, Uri}
 
-case class AuthController private (crypto: Crypto, gs: GoogleAuthService):
+import java.time.Instant
+
+case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userService: UserService):
   private val HOME_REDIRECT = Found(Location(uri"http://localhost:8080/"))
 
   private val loginRoutes = HttpRoutes.of[IO]:
@@ -100,11 +105,20 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService):
         Unauthorized(`WWW-Authenticate`(Challenge("username_password", "localhost")))
       )
 
+    case GET -> Root / "register" =>
+      Ok(Layout(false, RegisterPage()))
+
     case req @ POST -> Root / "register" =>
-      Ok("Register form goes here")
+      for
+        rur  <- req.as[RegisterUserRequest]
+        _    <- userService.registerUser(
+                  User(0L, Instant.now.toString, rur.username, rur.email, Some(rur.password), UserOrigin.Form)
+                )
+        resp <- Created()
+      yield resp
 
   def routes = Router("/login" -> loginRoutes, "/" -> baseRoutes)
 end AuthController
 
 object AuthController:
-  def make(crypto: Crypto, gs: GoogleAuthService) = AuthController(crypto, gs)
+  def make(crypto: Crypto, gs: GoogleAuthService, userService: UserService) = AuthController(crypto, gs, userService)

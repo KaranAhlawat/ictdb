@@ -1,32 +1,46 @@
 package io.karan.ictdb.views
 
-import io.karan.ictdb.views.htmx.Attributes.boost
-import scalatags.Text.all.{footer, *}
+import io.karan.ictdb.views.htmx.Attributes.*
+import scalatags.Text.all.{footer, content as contentAttr, *}
 import scalatags.Text.tags2.{main, nav}
 
 object Layout:
   def apply(loggedIn: Boolean, content: Modifier*) =
     html(
+      attr("data-theme") := "light",
       head(
+        meta(charset := "utf-8"),
+        meta(name    := "viewport", contentAttr := "width=device-width, initial-scale=1"),
         title := "ICTdb",
-        script(src := "https://unpkg.com/htmx.org@2.0.4")
+        link(rel     := "stylesheet", href      := "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"),
+        script(src   := "https://unpkg.com/htmx.org@2.0.4")
       ),
       body(boost(), appHeader(loggedIn), main(cls := "container", content), appFooter)
     )
 
   private def appHeader(loggedIn: Boolean) =
     val loginButton  =
-      div(cls := "navbar-end", div(cls := "navbar-item", a(cls := "button is-primary", href := "/login", "Sign In")))
+      div(cls := "navbar-end",
+        div(cls := "navbar-item", a(cls := "button is-primary", href := "/register", "Sign Up")),
+        div(cls := "navbar-item", a(href := "/login", "Log In"))
+      )
     val logoutButton =
       div(cls := "navbar-end", div(cls := "navbar-item", a(cls := "button is-primary", href := "/logout", "Log Out")))
     header(
       cls := "px-6 pt-4",
       nav(
         cls := "navbar",
-        ul(cls := "navbar-brand", li(strong("ICTdb"))),
+        ul(cls := "navbar-brand", li(get("/"), strong(cls := "has-text-weight-bold is-size-4", "ICTdb"))),
         if loggedIn then logoutButton else loginButton
       )
     )
 
   private def appFooter =
-    footer(cls := "px-6", p("Made with ❤\uFE0F with Scala + HTMX"))
+    footer(
+      cls    := "footer",
+      position.fixed,
+      bottom := 0,
+      width  := "100%",
+      div(cls := "content has-text-centered", p("Made with  Scala ➕ HTMX ➕ ❤\uFE0F"))
+    )
+end Layout
