@@ -3,11 +3,11 @@ CREATE TYPE user_origin AS ENUM ('form', 'google');
 CREATE TABLE IF NOT EXISTS users
 (
     id            bigserial PRIMARY KEY,
-    provider_id   text        NOT NULL,
-    username      text        NOT NULL,
-    user_email    text        NOT NULL,
+    provider_id   text                                        NOT NULL,
+    username      text                                        NOT NULL,
+    user_email    text                                        NOT NULL,
     user_password text,
-    provider      user_origin NOT NULL
+    provider      text CHECK (provider IN ('form', 'google')) NOT NULL
 );
 
 ALTER TABLE IF EXISTS users

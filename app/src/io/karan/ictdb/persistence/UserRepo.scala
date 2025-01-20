@@ -27,9 +27,16 @@ case class UserReader(
   provider: DbUserOrigin
 ) derives DbCodec
 
-trait UserRepo extends Repo[UserCreator, UserReader, Long]
+trait UserRepo extends Repo[UserCreator, UserReader, Long]:
+  def findByUsernameOrEmail(usernameOrEmail: String)(using DbCon): Option[UserReader]
 
-class UserRepoLive extends UserRepo
+class UserRepoLive extends UserRepo:
+
+  override def findByUsernameOrEmail(usernameOrEmail: String)(using DbCon): Option[UserReader] =
+    sql"SELECT * FROM users WHERE (username = $usernameOrEmail OR user_email = $usernameOrEmail) AND provider = 'form' LIMIT 1"
+      .query[UserReader]
+      .run()
+      .headOption
 
 object UserRepo:
   def live = UserRepoLive()

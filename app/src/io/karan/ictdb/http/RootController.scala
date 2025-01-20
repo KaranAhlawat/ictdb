@@ -12,7 +12,8 @@ import org.http4s.scalatags.*
 
 object RootController:
   def routes(crypto: Crypto) = HttpRoutes.of[IO]:
-    case req @ GET -> Root             =>
+    case req @ GET -> Root / "bulma.js" => StaticFile.fromResource("bulma.js", Some(req)).getOrElseF(NotFound())
+    case req @ GET -> Root              =>
       req
         .checkAuthentication(c =>
           crypto.decrypt(c.content).map(decrypted => main(decrypted)).flatMap(c => Ok(Layout(true, c)))

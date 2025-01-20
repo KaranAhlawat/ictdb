@@ -1,70 +1,89 @@
 package io.karan.ictdb.http
 
+import cats.data.Validated.Invalid
+import cats.data.Validated.Valid
 import cats.effect.IO
+import cats.syntax.all.*
 import com.nimbusds.oauth2.sdk.id.State
 import com.nimbusds.oauth2.sdk.pkce.CodeVerifier
+import io.circe.syntax.*
 import io.karan.ictdb.auth.*
-import io.karan.ictdb.domain.UserOrigin.{Form, Google}
-import io.karan.ictdb.domain.{User, UserOrigin}
-import io.karan.ictdb.http.auth.{Cookies, checkAuthentication}
-import io.karan.ictdb.http.dto.RegisterUserRequest
+import io.karan.ictdb.domain.*
+import io.karan.ictdb.domain.DomainErrors.InvalidCredentials
+import io.karan.ictdb.http.auth.Cookies
+import io.karan.ictdb.http.auth.checkAuthentication
+import io.karan.ictdb.http.validation.ValidationError.*
+import io.karan.ictdb.http.validation.Validations
 import io.karan.ictdb.services.UserService
-import io.karan.ictdb.views.{Layout, LoginPage, RegisterPage}
-import org.http4s.circe.CirceEntityDecoder.*
+import io.karan.ictdb.views.{Root as _, *}
+import org.http4s.*
 import org.http4s.dsl.io.*
-import org.http4s.headers.{Location, `WWW-Authenticate`}
+import org.http4s.headers.*
 import org.http4s.implicits.uri
 import org.http4s.scalatags.*
-import org.http4s.server.Router
-import org.http4s.{Challenge, HttpRoutes, Response, Status, Uri}
+import org.http4s.server.*
 
 import java.time.Instant
+
+object MissingFieldsOptionalMatcher extends OptionalQueryParamDecoderMatcher[String]("missing")
+object ErrOptionalMatcher           extends OptionalQueryParamDecoderMatcher[String]("err")
 
 case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userService: UserService):
   private val HOME_REDIRECT = Found(Location(uri"http://localhost:8080/"))
 
   private val loginRoutes = HttpRoutes.of[IO]:
-    case req @ GET -> Root =>
+    case req @ GET -> Root :? MissingFieldsOptionalMatcher(missing) +& ErrOptionalMatcher(err) =>
+      val missingList = missing.map(m => m.split(" ").toList)
       req.checkAuthentication(_ => HOME_REDIRECT) {
         req.cookies.find(_.name == Cookies.LOGIN_TYPE) match
-          case None            => Ok(Layout(false, LoginPage()))
+          case None            => Ok(Layout(false, LoginPage(missingList, err)))
           case Some(loginType) =>
             crypto
               .decrypt(loginType.content)
               .flatMap: login =>
-                Uri.fromString(s"http://localhost:8080/login/$login") match
-                  case Left(_)         => Ok(Layout(false, LoginPage()))
-                  case Right(location) => Found(Location(location))
+                val location =
+                  if login == "form" then uri"http://localhost:8080/login" else uri"http://localhost:8080/login/google"
+                Found(Location(location))
       }
 
     case req @ GET -> Root / "google" =>
       req.checkAuthentication(_ => HOME_REDIRECT) {
         gs.getRedirectionComponents.flatMap: opt =>
           opt.fold(IO.pure(Response(Status.InternalServerError)))(comp =>
-            val googleStateCookie = Cookies.createStateCookie(Google, comp.state)
-            val googleCodeCookie  = Cookies.createCodeCookie(Google, comp.verifier)
+            val googleStateCookie = Cookies.createStateCookie(UserOrigin.Google, comp.state)
+            val googleCodeCookie  = Cookies.createCodeCookie(UserOrigin.Google, comp.verifier)
 
             Found(Location(comp.uri)).map(_.addCookie(googleStateCookie).addCookie(googleCodeCookie))
           )
       }
 
-    case req @ GET -> Root / "form" =>
+    case req @ POST -> Root =>
       req.checkAuthentication(_ => HOME_REDIRECT) {
-        // Check is credentials are correct
-        val dummyUser = User(
-          id = 1L,
-          providerId = "formID",
-          username = "korven",
-          userEmail = "ahlawatkaran12@gmail.com",
-          userPassword = Some("pass"),
-          provider = Form
-        )
-        (crypto.encrypt(dummyUser.toString), crypto.encrypt("form")).parTupled
-          .map: (content, client) =>
-            (Cookies.createAuthCookie(content, 604800L), Cookies.createLoginCookie(client))
-          .flatMap: (auth, login) =>
-            HOME_REDIRECT.map: resp =>
-              resp.addCookie(auth).addCookie(login)
+        req
+          .as[UrlForm]
+          .map(Validations.parseLoginUser)
+          .flatMap: login =>
+            login match
+              case Invalid(e)   =>
+                val missing = e
+                  .map {
+                    case MissingFields(fieldName) => fieldName
+                    case PasswordMismatch         => ""
+                  }
+                  .filterNot(_.isBlank)
+                UnprocessableEntity(Layout(false, LoginPage(missing = missing.toList.some)))
+              case Valid(creds) =>
+                val user = userService.loginUser(creds.usernameOrEmail, creds.password)
+                user.flatMap: userE =>
+                  userE match
+                    case Left(msg)   => UnprocessableEntity(Layout(false, LoginPage(err = msg.some)))
+                    case Right(user) =>
+                      (crypto.encrypt(user.asJson.toString), crypto.encrypt("form")).parTupled
+                        .map: (content, client) =>
+                          (Cookies.createAuthCookie(content, 604800L), Cookies.createLoginCookie(client))
+                        .flatMap: (auth, login) =>
+                          HOME_REDIRECT.map: resp =>
+                            resp.addCookie(auth).addCookie(login)
       }
 
   private val baseRoutes = HttpRoutes.of[IO]:
@@ -105,17 +124,51 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
         Unauthorized(`WWW-Authenticate`(Challenge("username_password", "localhost")))
       )
 
-    case GET -> Root / "register" =>
-      Ok(Layout(false, RegisterPage()))
+    case GET -> Root / "register" :? MissingFieldsOptionalMatcher(missing) =>
+      val missingList = missing.map(m => m.split(" ").toList)
+      Ok(Layout(false, RegisterPage(missingList)))
 
     case req @ POST -> Root / "register" =>
-      for
-        rur  <- req.as[RegisterUserRequest]
-        _    <- userService.registerUser(
-                  User(0L, Instant.now.toString, rur.username, rur.email, Some(rur.password), UserOrigin.Form)
-                )
-        resp <- Created()
-      yield resp
+      val respIO =
+        for
+          form <- req.as[UrlForm]
+          rur  <- Validations
+                    .parseRegisterUser(form)
+                    .fold(
+                      nec =>
+                        val missing = nec
+                          .map {
+                            case MissingFields(fieldName) => fieldName
+                            case PasswordMismatch         => ""
+                          }
+                          .filterNot(_.isBlank)
+                        IO.raiseError(MissingFields(missing.mkString_("+")))
+                      ,
+                      data => IO.pure(data)
+                    )
+          _    <-
+            userService.registerUser(
+              User(
+                0L,
+                Instant.now.getEpochSecond.toString,
+                rur.username,
+                rur.email,
+                Some(rur.password),
+                UserOrigin.Form
+              )
+            )
+          resp <- Found(Location(uri"http://localhost:8080/login"))
+        yield resp
+
+      respIO.handleErrorWith { case MissingFields(fieldName) =>
+        Found(
+          Location(
+            Uri
+              .fromString(s"http://localhost:8080/register?missing=$fieldName")
+              .getOrElse(uri"http://localhost:8080/register")
+          )
+        )
+      }
 
   def routes = Router("/login" -> loginRoutes, "/" -> baseRoutes)
 end AuthController
