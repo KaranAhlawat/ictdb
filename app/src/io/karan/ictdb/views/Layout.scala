@@ -22,7 +22,6 @@ object Root:
   def apply(content: Modifier*) =
     doctype("html")(
       html(
-        attr("data-theme") := "light",
         head(
           meta(charset := "utf-8"),
           meta(name    := "viewport", contentAttr   := "width=device-width, initial-scale=1"),
@@ -36,7 +35,7 @@ object Root:
     )
 
 object Layout:
-  def apply(loggedIn: Boolean, content: Modifier*) =
+  def apply(loggedIn: Boolean)(content: Modifier*) =
     Root(appHeader(loggedIn), main(cls := "container", content), appFooter)
 
   private def appHeader(loggedIn: Boolean) =

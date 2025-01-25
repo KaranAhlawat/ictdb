@@ -22,8 +22,8 @@ object Application extends IOApp.Simple:
       config               <- AppConfig.make.toResource
       ds                   <- DataSource.make(config.db)
       xa                   <- config.db.maxConn.fold(Transactor[IO](ds))(max => Transactor[IO](ds, max)).toResource
-      userRepo              = UserRepo.live
-      userService           = UserService.live(xa, userRepo)
+      userRepo              = UserRepo.live(xa)
+      userService           = UserService.live(userRepo)
       client               <- EmberClientBuilder.default[IO].build
       sender               <- Http4sRequestSender.make(client)
       virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor

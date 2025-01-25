@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users
     username      text                                        NOT NULL,
     user_email    text                                        NOT NULL,
     user_password text,
-    provider      text CHECK (provider IN ('form', 'google')) NOT NULL
+    provider      user_origin NOT NULL
 );
 
 ALTER TABLE IF EXISTS users

@@ -9,7 +9,6 @@ import com.nimbusds.oauth2.sdk.pkce.CodeVerifier
 import io.circe.syntax.*
 import io.karan.ictdb.auth.*
 import io.karan.ictdb.domain.*
-import io.karan.ictdb.domain.DomainErrors.InvalidCredentials
 import io.karan.ictdb.http.auth.Cookies
 import io.karan.ictdb.http.auth.checkAuthentication
 import io.karan.ictdb.http.validation.ValidationError.*
@@ -36,7 +35,7 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
       val missingList = missing.map(m => m.split(" ").toList)
       req.checkAuthentication(_ => HOME_REDIRECT) {
         req.cookies.find(_.name == Cookies.LOGIN_TYPE) match
-          case None            => Ok(Layout(false, LoginPage(missingList, err)))
+          case None            => Ok(LoginPage(missingList, err))
           case Some(loginType) =>
             crypto
               .decrypt(loginType.content)
@@ -71,12 +70,12 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
                     case PasswordMismatch         => ""
                   }
                   .filterNot(_.isBlank)
-                UnprocessableEntity(Layout(false, LoginPage(missing = missing.toList.some)))
+                UnprocessableEntity(LoginPage(missing = missing.toList.some))
               case Valid(creds) =>
                 val user = userService.loginUser(creds.usernameOrEmail, creds.password)
                 user.flatMap: userE =>
                   userE match
-                    case Left(msg)   => UnprocessableEntity(Layout(false, LoginPage(err = msg.some)))
+                    case Left(msg)   => UnprocessableEntity(LoginPage(err = msg.some))
                     case Right(user) =>
                       (crypto.encrypt(user.asJson.toString), crypto.encrypt("form")).parTupled
                         .map: (content, client) =>
@@ -126,7 +125,7 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
 
     case GET -> Root / "register" :? MissingFieldsOptionalMatcher(missing) =>
       val missingList = missing.map(m => m.split(" ").toList)
-      Ok(Layout(false, RegisterPage(missingList)))
+      Ok(RegisterPage(missingList))
 
     case req @ POST -> Root / "register" =>
       val respIO =

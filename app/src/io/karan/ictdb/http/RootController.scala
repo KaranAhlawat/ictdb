@@ -16,5 +16,5 @@ object RootController:
     case req @ GET -> Root              =>
       req
         .checkAuthentication(c =>
-          crypto.decrypt(c.content).map(decrypted => main(decrypted)).flatMap(c => Ok(Layout(true, c)))
-        )(Ok(Layout(false, "Please login")))
+          crypto.decrypt(c.content).map(decrypted => main(decrypted)).flatMap(c => Ok(Layout(true)(c)))
+        )(Ok(Layout(false)("Please login")))

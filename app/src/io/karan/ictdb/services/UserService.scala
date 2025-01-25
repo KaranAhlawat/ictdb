@@ -1,22 +1,21 @@
 package io.karan.ictdb.services
 
 import cats.effect.IO
-import com.augustnagro.magnum.magcats.Transactor
 import io.karan.ictdb.domain.User
-import io.karan.ictdb.persistence.{UserCreator, UserRepo}
+import io.karan.ictdb.persistence.UserRepo
 import io.scalaland.chimney.dsl.*
+import io.karan.ictdb.persistence.UserModel
 
 trait UserService:
   def registerUser(user: User): IO[Unit]
   def loginUser(usernameOrEmail: String, password: String): IO[Either[String, User]]
 
-class UserServiceLive private[services] (xa: Transactor[IO], userRepo: UserRepo) extends UserService:
+class UserServiceLive private[services] (userRepo: UserRepo) extends UserService:
   override def registerUser(user: User) =
-    xa.connect:
-      userRepo.insert(user.transformInto[UserCreator])
+    userRepo.delay(userRepo.insert(user.transformInto[UserModel]))
 
   override def loginUser(usernameOrEmail: String, password: String): IO[Either[String, User]] =
-    val user = xa.connect(userRepo.findByUsernameOrEmail(usernameOrEmail))
+    val user = userRepo.delay(userRepo.findByUsernameOrEmail(usernameOrEmail))
     user.map: userOpt =>
       userOpt.fold(Left("Invalid credentials provided"))(user =>
         if user.userPassword.contains(password) then Right(user.transformInto[User])
@@ -24,4 +23,4 @@ class UserServiceLive private[services] (xa: Transactor[IO], userRepo: UserRepo)
       )
 
 object UserService:
-  def live(xa: Transactor[IO], userRepo: UserRepo) = UserServiceLive(xa, userRepo)
+  def live(userRepo: UserRepo) = UserServiceLive(userRepo)
