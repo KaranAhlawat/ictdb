@@ -105,18 +105,30 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
             gs
               .calculateSecondsToExpiration(idToken)
               .flatMap: maxAge =>
-                (crypto.encrypt(userInfo.toJSONString), crypto.encrypt("google")).parTupled
-                  .flatMap: (content, client) =>
-                    // Set cookie
-                    val authCookie      = Cookies.createAuthCookie(content, maxAge)
-                    val loginTypeCookie = Cookies.createLoginCookie(client)
+                userService
+                  .registerUser(
+                    User(
+                      0L,
+                      userInfo.getSubject.getValue,
+                      userInfo.getGivenName,
+                      userInfo.getEmailAddress,
+                      None,
+                      UserOrigin.Google
+                    )
+                  )
+                  .voidError >>
+                  (crypto.encrypt(userInfo.toJSONString), crypto.encrypt("google")).parTupled
+                    .flatMap: (content, client) =>
+                      // Set cookie
+                      val authCookie      = Cookies.createAuthCookie(content, maxAge)
+                      val loginTypeCookie = Cookies.createLoginCookie(client)
 
-                    HOME_REDIRECT.map: resp =>
-                      resp
-                        .addCookie(authCookie)
-                        .addCookie(loginTypeCookie)
-                        .removeCookie(Cookies.STATE_FOR_("google"))
-                        .removeCookie(Cookies.VERIFIER_FOR_("google"))
+                      HOME_REDIRECT.map: resp =>
+                        resp
+                          .addCookie(authCookie)
+                          .addCookie(loginTypeCookie)
+                          .removeCookie(Cookies.STATE_FOR_("google"))
+                          .removeCookie(Cookies.VERIFIER_FOR_("google"))
 
     case req @ GET -> Root / "logout" =>
       req.checkAuthentication(_ => HOME_REDIRECT.map(_.removeCookie(Cookies.AUTH).removeCookie(Cookies.LOGIN_TYPE)))(

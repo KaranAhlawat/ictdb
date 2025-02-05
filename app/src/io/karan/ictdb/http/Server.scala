@@ -33,7 +33,7 @@ object Server:
         ErrorAction.log(inRoutes, messageFailureLogAction = errorHandler, serviceErrorLogAction = errorHandler)
       )
 
-    val middleware = logging.andThen(errorLogging)
+    val middleware = errorLogging
     middleware(app)
 
   private def errorHandler(t: Throwable, msg: => String) =

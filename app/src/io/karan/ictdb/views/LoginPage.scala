@@ -9,28 +9,30 @@ object LoginPage:
   def apply(missing: Option[List[String]] = None, err: Option[String] = None) =
     Layout(false) {
       section(
-        cls      := "section container",
         maxWidth := 500,
         missing.fold(p())(missing =>
           div(
-            cls := "notification is-danger",
-            button(cls := "delete"),
+            cls := "alert alert-error alert-soft",
             strong("Missing fields: "),
             s"${missing.map(_.capitalize).mkString(", ")}"
           )
         ),
-        err.fold(p())(err => div(cls := "notification is-danger", button(cls := "delete"), strong(err))),
-        form(
-          method := "POST",
-          FormField("username", "Username Or Email", "text"),
-          FormField("password", "Password", "password"),
-          div(
-            cls := "field",
-            div(cls := "control", button(cls := "button is-link is-fullwidth", `type` := "submit", "Submit"))
+        err.fold(p())(err => div(cls := "alert alert-error alert-soft", strong(err))),
+        div(
+          cls := "card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl",
+          form(
+            method := "POST",
+            cls    := "card-body",
+            fieldset(
+              cls := "fieldset",
+              FormField("username", "Username Or Email", "text"),
+              FormField("password", "Password", "password"),
+              button(cls := "btn btn-primary", `type` := "submit", "Submit")
+            )
           )
         ),
         div(
-          cls    := "container is-flex is-justify-content-center is-flex-direction-column",
+          cls := "container is-flex is-justify-content-center is-flex-direction-column",
           p(cls := "has-text-centered has-text-weight-semibold pb-2", "Or login with"),
           a(cls := "mx-auto", href := "/login/google", boost(false), role := "button", GoogleIcon())
         )

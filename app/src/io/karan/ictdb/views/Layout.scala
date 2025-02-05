@@ -27,38 +27,39 @@ object Root:
           meta(name    := "viewport", contentAttr   := "width=device-width, initial-scale=1"),
           meta(name    := "htmx-config", rawContent := htmxConfig),
           title := "ICTdb",
-          link(rel     := "stylesheet", href        := "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"),
-          script(src   := "https://unpkg.com/htmx.org@2.0.4")
+          link(rel := "stylesheet", href := "/style.css"),
+          script(src   := "https://unpkg.com/htmx.org@2.0.4"),
+          script(src := "https://unpkg.com/hyperscript.org@0.9.14")
         ),
-        body(boost(), content, script(defer, src := "/bulma.js"))
+        body(boost(), content)
       )
     )
 
 object Layout:
   def apply(loggedIn: Boolean)(content: Modifier*) =
-    Root(appHeader(loggedIn), main(cls := "container", content), appFooter)
+    Root(appHeader(loggedIn), main(cls := "px-8", content), appFooter)
 
   private def appHeader(loggedIn: Boolean) =
     val loginButton  =
       div(
-        cls := "navbar-end",
-        div(cls := "navbar-item", a(cls := "button is-primary", href := "/register", "Sign Up")),
-        div(cls := "navbar-item", a(href := "/login", "Log In"))
+        cls := "flex-none flex gap-5 items-center",
+        div(cls := "navbar-item", a(cls := "btn btn-primary", href := "/register", "Sign Up")),
+        div(cls := "navbar-item", a(href := "/login", "Log In")),
       )
     val logoutButton =
-      div(cls := "navbar-end", div(cls := "navbar-item", a(cls := "button is-primary", href := "/logout", "Log Out")))
+      div(cls := "flex-none", div(cls := "navbar-item", a(cls := "btn btn-primary", href := "/logout", "Log Out")))
     header(
       cls := "px-6 pt-4",
       nav(
         cls := "navbar",
-        ul(cls := "navbar-brand", li(get("/"), strong(cls := "has-text-weight-bold is-size-4", "ICTdb"))),
+        ul(cls := "flex-1", li(get("/"), strong(cls := "font-bold text-2xl", "ICTdb"))),
         if loggedIn then logoutButton else loginButton
       )
     )
 
   private def appFooter =
     footer(
-      cls    := "footer",
+      cls    := "footer footer-center p-10 bg-base-300",
       position.fixed,
       bottom := 0,
       width  := "100%",

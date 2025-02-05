@@ -4,7 +4,7 @@ import cats.effect.IO
 import io.karan.ictdb.domain.User
 import io.karan.ictdb.persistence.UserRepo
 import io.scalaland.chimney.dsl.*
-import io.karan.ictdb.persistence.UserModel
+import io.karan.ictdb.persistence.models.UserModel
 
 trait UserService:
   def registerUser(user: User): IO[Unit]
