@@ -21,6 +21,7 @@ object V {
   val chimney    = "1.6.0"
   val nimbus     = "11.21"
   val tink       = "1.16.0"
+  val password = "1.8.2"
   val logback    = "1.5.16"
   val circe      = "0.14.10"
 }
@@ -54,6 +55,7 @@ object app extends TpolecatModule with ScalafixModule {
     // Security
     ivy"com.nimbusds:oauth2-oidc-sdk:${V.nimbus}",
     ivy"com.google.crypto.tink:tink:${V.tink}",
+    ivy"com.password4j:password4j:${V.password}",
     // Logging
     ivy"ch.qos.logback:logback-classic:${V.logback}"
   )
