@@ -30,11 +30,8 @@ trait GoogleAuthService:
 object GoogleAuthService:
   def make(config: GoogleConfig, sender: HTTPRequestSender, es: Executor): GoogleAuthService =
     new GoogleAuthService:
-      private val provider = AuthProvider.GoogleOIDC(
-        "http://localhost:8080/callback",
-        config.clientId,
-        config.clientSecret.value
-      )
+      private val provider =
+        AuthProvider.GoogleOIDC("http://localhost:8080/callback", config.clientId, config.clientSecret.value)
       private val scope    = Scope("openid", "email", "profile")
 
       override def getRedirectionComponents: IO[Option[RedirectComponents]] =

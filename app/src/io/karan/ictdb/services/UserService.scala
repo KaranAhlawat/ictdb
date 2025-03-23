@@ -5,6 +5,7 @@ import io.karan.ictdb.domain.User
 import io.karan.ictdb.persistence.UserRepo
 import io.scalaland.chimney.dsl.*
 import io.karan.ictdb.persistence.models.UserModel
+import io.karan.ictdb.persistence.models.UserCreator
 
 trait UserService:
   def registerUser(user: User): IO[Unit]
@@ -12,7 +13,7 @@ trait UserService:
 
 class UserServiceLive private[services] (userRepo: UserRepo) extends UserService:
   override def registerUser(user: User) =
-    userRepo.delay(userRepo.insert(user.transformInto[UserModel]))
+    userRepo.delay(userRepo.insert(user.transformInto[UserCreator]))
 
   override def loginUser(usernameOrEmail: String, password: String): IO[Either[String, User]] =
     val user = userRepo.delay(userRepo.findByUsernameOrEmail(usernameOrEmail))

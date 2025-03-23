@@ -8,7 +8,9 @@ import io.karan.ictdb.config.ServerConfig
 import io.karan.ictdb.services.UserService
 import org.http4s.HttpRoutes
 import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.server.middleware.{ErrorAction, ErrorHandling, Logger}
+import org.http4s.server.middleware.{ErrorAction, ErrorHandling}
+import org.http4s.server.middleware.RequestLogger
+import org.http4s.server.middleware.ResponseLogger
 
 type Middleware = HttpRoutes[IO] => HttpRoutes[IO]
 
@@ -25,15 +27,16 @@ object Server:
     val rootRoutes = RootController.routes(crypto)
     val authRoutes = AuthController.make(crypto, gs, userService).routes
 
-    val app                 = rootRoutes <+> authRoutes
-    val logging: Middleware = Logger.httpRoutes[IO](logBody = true, logHeaders = true)
+    val app                        = rootRoutes <+> authRoutes
+    val requestLogger: Middleware  = RequestLogger.httpRoutes(logBody = true, logHeaders = true)
+    val responseLogger: Middleware = ResponseLogger.httpRoutes(logBody = false, logHeaders = true)
 
-    val errorLogging: Middleware = inRoutes =>
+    val errorLogger: Middleware = inRoutes =>
       ErrorHandling.Recover.total(
         ErrorAction.log(inRoutes, messageFailureLogAction = errorHandler, serviceErrorLogAction = errorHandler)
       )
 
-    val middleware = errorLogging
+    val middleware = requestLogger.andThen(errorLogger).andThen(responseLogger)
     middleware(app)
 
   private def errorHandler(t: Throwable, msg: => String) =

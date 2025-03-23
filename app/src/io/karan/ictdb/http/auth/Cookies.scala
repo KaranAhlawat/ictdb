@@ -5,10 +5,11 @@ import com.nimbusds.oauth2.sdk.pkce.CodeVerifier
 import io.karan.ictdb.domain.UserOrigin
 import org.http4s.ResponseCookie
 import org.http4s.SameSite.Lax
+import org.http4s.SameSite.Strict
 
 object Cookies:
-  val AUTH                            = ".http4s.cookie"
-  val LOGIN_TYPE                      = ".http4s.login"
+  val AUTH       = ".http4s.cookie"
+  val LOGIN_TYPE = ".http4s.login"
 
   def createStateCookie(provider: UserOrigin, state: State) =
     ResponseCookie(
@@ -21,7 +22,7 @@ object Cookies:
       sameSite = Some(Lax)
     )
 
-  def STATE_FOR_(provider: String)    = s"${provider}_oauth_state"
+  def STATE_FOR_(provider: String) = s"${provider}_oauth_state"
 
   def createCodeCookie(provider: UserOrigin, verifier: CodeVerifier) =
     ResponseCookie(
@@ -44,9 +45,10 @@ object Cookies:
       maxAge = Some(maxAge),
       secure = true,
       httpOnly = true,
-      path = Some("/")
+      path = Some("/"),
+      sameSite = Some(Strict)
     )
-    
+
   def createLoginCookie(content: String) =
     ResponseCookie(
       name = Cookies.LOGIN_TYPE,
@@ -55,6 +57,7 @@ object Cookies:
       maxAge = Some(31_536_000L), // 1 Year
       secure = true,
       httpOnly = true,
-      path = Some("/")
+      path = Some("/"),
+      sameSite = Some(Strict)
     )
 end Cookies

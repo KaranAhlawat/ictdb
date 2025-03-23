@@ -1,6 +1,7 @@
 package io.karan.ictdb.persistence.models
 
 import com.augustnagro.magnum.magcats.*
+import com.augustnagro.magnum.pg.enums.PgEnumDbCodec
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
@@ -31,6 +32,14 @@ object DbUserOrigin:
 @SqlName("users")
 case class UserModel(
   @Id id: Long,
+  providerId: String,
+  username: String,
+  userEmail: String,
+  userPassword: Option[String],
+  provider: UserOriginType
+) derives DbCodec
+
+case class UserCreator(
   providerId: String,
   username: String,
   userEmail: String,

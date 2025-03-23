@@ -27,9 +27,9 @@ object Root:
           meta(name    := "viewport", contentAttr   := "width=device-width, initial-scale=1"),
           meta(name    := "htmx-config", rawContent := htmxConfig),
           title := "ICTdb",
-          link(rel := "stylesheet", href := "/style.css"),
+          link(rel     := "stylesheet", href        := "/style.css"),
           script(src   := "https://unpkg.com/htmx.org@2.0.4"),
-          script(src := "https://unpkg.com/hyperscript.org@0.9.14")
+          script(src   := "https://unpkg.com/hyperscript.org@0.9.14")
         ),
         body(boost(), content)
       )
@@ -44,7 +44,7 @@ object Layout:
       div(
         cls := "flex-none flex gap-5 items-center",
         div(cls := "navbar-item", a(cls := "btn btn-primary", href := "/register", "Sign Up")),
-        div(cls := "navbar-item", a(href := "/login", "Log In")),
+        div(cls := "navbar-item", a(href := "/login", "Log In"))
       )
     val logoutButton =
       div(cls := "flex-none", div(cls := "navbar-item", a(cls := "btn btn-primary", href := "/logout", "Log Out")))

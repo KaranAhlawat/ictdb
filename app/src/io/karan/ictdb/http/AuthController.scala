@@ -1,7 +1,6 @@
 package io.karan.ictdb.http
 
-import cats.data.Validated.Invalid
-import cats.data.Validated.Valid
+import cats.data.Validated.{Invalid, Valid}
 import cats.effect.IO
 import cats.syntax.all.*
 import com.nimbusds.oauth2.sdk.id.State
@@ -9,8 +8,7 @@ import com.nimbusds.oauth2.sdk.pkce.CodeVerifier
 import io.circe.syntax.*
 import io.karan.ictdb.auth.*
 import io.karan.ictdb.domain.*
-import io.karan.ictdb.http.auth.Cookies
-import io.karan.ictdb.http.auth.checkAuthentication
+import io.karan.ictdb.http.auth.{Cookies, checkAuthn}
 import io.karan.ictdb.http.validation.ValidationError.*
 import io.karan.ictdb.http.validation.Validations
 import io.karan.ictdb.services.UserService
@@ -33,7 +31,7 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
   private val loginRoutes = HttpRoutes.of[IO]:
     case req @ GET -> Root :? MissingFieldsOptionalMatcher(missing) +& ErrOptionalMatcher(err) =>
       val missingList = missing.map(m => m.split(" ").toList)
-      req.checkAuthentication(_ => HOME_REDIRECT) {
+      req.checkAuthn(_ => HOME_REDIRECT) {
         req.cookies.find(_.name == Cookies.LOGIN_TYPE) match
           case None            => Ok(LoginPage(missingList, err))
           case Some(loginType) =>
@@ -46,9 +44,9 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
       }
 
     case req @ GET -> Root / "google" =>
-      req.checkAuthentication(_ => HOME_REDIRECT) {
+      req.checkAuthn(_ => HOME_REDIRECT) {
         gs.getRedirectionComponents.flatMap: opt =>
-          opt.fold(IO.pure(Response(Status.InternalServerError)))(comp =>
+          opt.fold(InternalServerError())(comp =>
             val googleStateCookie = Cookies.createStateCookie(UserOrigin.Google, comp.state)
             val googleCodeCookie  = Cookies.createCodeCookie(UserOrigin.Google, comp.verifier)
 
@@ -57,7 +55,7 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
       }
 
     case req @ POST -> Root =>
-      req.checkAuthentication(_ => HOME_REDIRECT) {
+      req.checkAuthn(_ => HOME_REDIRECT) {
         req
           .as[UrlForm]
           .map(Validations.parseLoginUser)
@@ -131,7 +129,7 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
                           .removeCookie(Cookies.VERIFIER_FOR_("google"))
 
     case req @ GET -> Root / "logout" =>
-      req.checkAuthentication(_ => HOME_REDIRECT.map(_.removeCookie(Cookies.AUTH).removeCookie(Cookies.LOGIN_TYPE)))(
+      req.checkAuthn(_ => HOME_REDIRECT.map(_.removeCookie(Cookies.AUTH).removeCookie(Cookies.LOGIN_TYPE)))(
         Unauthorized(`WWW-Authenticate`(Challenge("username_password", "localhost")))
       )
 
@@ -153,7 +151,7 @@ case class AuthController private (crypto: Crypto, gs: GoogleAuthService, userSe
                             case PasswordMismatch         => ""
                           }
                           .filterNot(_.isBlank)
-                        IO.raiseError(MissingFields(missing.mkString_("+")))
+                        IO.raiseError(MissingFields(missing.mkString_(" ")))
                       ,
                       data => IO.pure(data)
                     )
